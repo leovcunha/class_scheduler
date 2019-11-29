@@ -46,25 +46,23 @@ class AvailabilitiesController < ApplicationController
       message = []
       status = :ok
 
-      Availability.transaction do
-        permitted_params.each do |key, value|
-          creation = Contexts::Availabilities::Creation.new(permit_nested(value), current_user)
+      permitted_params.each do |key, value|
+        creation = Contexts::Availabilities::Creation.new(permit_nested(value), current_user)
 
-          begin
-            @availability = creation.execute
-          rescue Contexts::Availabilities::Errors::UnknownAvailabilityError,
-              Contexts::Availabilities::Errors::OverlappingAvailability,
-              Contexts::Availabilities::Errors::StartTimeMissing,
-              Contexts::Availabilities::Errors::EndTimeMissing,
-              Contexts::Availabilities::Errors::ShortAvailability => e
-            message << e.message
-            status = :unprocessable_entity
-          else
-            message << nil # no error message for this availability
-          end
+        begin
+          @availability = creation.execute
+        rescue Contexts::Availabilities::Errors::UnknownAvailabilityError,
+            Contexts::Availabilities::Errors::OverlappingAvailability,
+            Contexts::Availabilities::Errors::StartTimeMissing,
+            Contexts::Availabilities::Errors::EndTimeMissing,
+            Contexts::Availabilities::Errors::ShortAvailability => e
+          message << e.message
+          status = :unprocessable_entity
+        else
+          message << { availability: `#{@availability.id} successfully created` }
         end
-        raise ActiveRecord::Rollback, "create availability errors" if status != :ok
       end
+
       render :json=> { :message => message }, :status => status
     end
   end
