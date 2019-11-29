@@ -96,13 +96,6 @@ class ApplicationController < ActionController::Base
         :currentUser => @user
     }
   end
-  
-  def sitemap
-    @languages = ["", "en", "es"] #/ for english
-    @pages = ["", "/about", "/faq" , "/sign_up/client", "/sign_up/volunteer", "/terms_of_use" ]
-    headers['Content-Type'] = 'application/xml'
-    @host = "#{request.protocol}#{request.host}"
-  end
 
   def set_locale
     params.permit(:locale)
